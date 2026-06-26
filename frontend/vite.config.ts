@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
+
 
 // Viteの公式ドキュメントへのリンク
 // https://vite.dev/config/
@@ -9,5 +9,5 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   // Viteで使用するプラグインの配列
   // react()プラグインを有効化することで、JSXの変換やReactの高速なHMR(ホットモジュールリプレイスメント)が利用可能になる
-  plugins: [react(), tailwindcss()],
+
 })
