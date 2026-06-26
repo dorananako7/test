@@ -1418,3 +1418,304 @@ SpringApplication.run(NpbPredictApplication.class, args);
 }
 // `NpbPredictApplication` クラスの終了。
 ```
+frontend/index.html
+```
+<!doctype html>
+// HTML5の文書型宣言。このファイルがHTML5で書かれていることをブラウザに伝えます。
+<html lang="en">
+// HTML文書のルート要素。言語(lang)属性を英語(en)に設定しています。
+  <head>
+// メタデータやタイトル、外部リソースのリンクなどを定義するheadセクションの開始。
+    <meta charset="UTF-8" />
+// 文字エンコーディングをUTF-8に指定し、文字化けを防ぎます。
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+// ブラウザのタブに表示されるアイコン（ファビコン）としてSVGファイルを指定します。
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+// スマートフォンなどのモバイル端末で適切に表示されるよう、表示領域（ビューポート）の幅と初期倍率を指定します（レスポンシブ対応に必須）。
+    <title>frontend</title>
+// ブラウザのタブに表示されるウェブページのタイトルです。
+  </head>
+// headセクションの終了。
+  <body>
+// ユーザーが実際にブラウザ画面で見るコンテンツを定義するbodyセクションの開始。
+    <div id="root"></div>
+// Reactアプリケーションがレンダリング（描画）されるマウントポイントとなる空のdivタグです。
+    <script type="module" src="/src/main.tsx"></script>
+// ReactアプリケーションのエントリーポイントとなるTypeScriptファイルをモジュールとして読み込みます。
+  </body>
+// bodyセクションの終了。
+</html>
+// html要素の終了。
+```
+
+frontend/src/main.tsx
+```
+import { StrictMode } from 'react'
+// Reactから、開発時に潜在的な問題を洗い出すためのコンポーネントであるStrictModeをインポートします。
+import { createRoot } from 'react-dom/client'
+// React 18以降の新しいレンダリングAPIであるcreateRootをインポートします。
+import './index.css'
+// アプリケーション全体に適用されるグローバルなCSSファイルを読み込みます。
+import App from './App.tsx'
+// アプリケーションのメインコンポーネントであるAppを読み込みます。
+
+// 空行。
+createRoot(document.getElementById('root')!).render(
+// HTMLファイル内のid="root"を持つDOM要素を取得し、それをReactのルートとしてレンダリングを開始します（"!"はTypeScriptでこの要素が必ず存在することを示すアサーションです）。
+  <StrictMode>
+// 開発モードでのみ子コンポーネントを2回レンダリングし、副作用のバグなどを検知しやすくします。
+    <App />
+// アプリケーションのメインコンポーネントを描画します。
+  </StrictMode>,
+// StrictModeの終了。
+)
+// render関数の終了。
+```
+
+frontend/src/App.tsx
+```
+import { useState } from 'react'
+// Reactから状態（State）を管理するためのフック（Hook）であるuseStateをインポートします。
+import reactLogo from './assets/react.svg'
+// assetsフォルダからReactのロゴ画像をインポートし、reactLogoという変数に割り当てます。
+import viteLogo from './assets/vite.svg'
+// Viteのロゴ画像をインポートし、viteLogoという変数に割り当てます。
+import heroImg from './assets/hero.png'
+// メインビジュアル用の画像(hero.png)をインポートします。
+import './App.css'
+// このコンポーネント専用のスタイルシート(App.css)をインポートします。
+
+// 空行。
+function App() {
+// Appという名前のReactの関数コンポーネントを定義します。
+  const [count, setCount] = useState(0)
+// useStateフックを呼び出し、状態変数count（初期値0）とその状態を更新するための関数setCountを定義します。
+
+// 空行。
+  return (
+// このコンポーネントが描画するJSX（HTMLに似た構文）を返し始めます。
+    <>
+// Reactフラグメント（Fragment）の開始。複数の要素を親のdiv等で囲むことなく返すための特別なタグです。
+      <section id="center">
+// IDが"center"のsection（区切り）要素を開始します。
+        <div className="hero">
+// "hero"というCSSクラスを持つdiv要素を開始します（JSXではclassの代わりにclassNameを使用します）。
+          <img src={heroImg} className="base" width="170" height="179" alt="" />
+// 先ほどインポートしたheroImgを変数としてsrcに指定し、画像を表示します。
+          <img src={reactLogo} className="framework" alt="React logo" />
+// reactLogoを変数としてsrcに指定し、Reactのロゴを表示します。
+          <img src={viteLogo} className="vite" alt="Vite logo" />
+// viteLogoを変数としてsrcに指定し、Viteのロゴを表示します。
+        </div>
+// divの終了。
+        <div>
+// 新しいdiv要素の開始。
+          <h1>Get started</h1>
+// 見出し(h1)を表示します。
+          <p>
+// 段落(p)要素の開始。
+            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
+// テキストを表示します。codeタグで囲まれた部分は等幅フォントなどで強調表示されます。HMRはHot Module Replacementの略です。
+          </p>
+// 段落の終了。
+        </div>
+// divの終了。
+        <button
+// ボタン要素の開始。
+          type="button"
+// ボタンのタイプを指定します。
+          className="counter"
+// スタイル付けのためのCSSクラスを指定します。
+          onClick={() => setCount((count) => count + 1)}
+// ボタンがクリックされたときのイベントハンドラ。クリック時にsetCountを呼び出し、現在のcountに1を足して状態を更新します。
+        >
+// 終了タグ。
+          Count is {count}
+// ボタン内に表示するテキスト。波括弧 {} を使って、JavaScriptの変数(count)の値を動的に表示します。
+        </button>
+// ボタン要素の終了。
+      </section>
+// sectionの終了。
+
+// 空行。
+      <div className="ticks"></div>
+// スタイル付け用の空のdiv要素。
+
+// 空行。
+      <section id="next-steps">
+// 次のステップを示すセクションの開始。
+        <div id="docs">
+// ドキュメントリンクをまとめるdiv要素の開始。
+          <svg className="icon" role="presentation" aria-hidden="true">
+// SVGアイコンを表示するための要素。スクリーンリーダーからは隠す設定(aria-hidden)をしています。
+            <use href="/icons.svg#documentation-icon"></use>
+// publicフォルダ内にあるSVGスプライトから特定のアイコンを読み込みます。
+          </svg>
+// SVG要素の終了。
+          <h2>Documentation</h2>
+// 小見出しを表示。
+          <p>Your questions, answered</p>
+// 段落を表示。
+          <ul>
+// 順序なしリスト(ul)の開始。
+            <li>
+// リスト項目(li)の開始。
+              <a href="https://vite.dev/" target="_blank">
+// リンク(a)の開始。別タブ(_blank)で開くように設定しています。
+                <img className="logo" src={viteLogo} alt="" />
+// リンク内にViteのロゴ画像を表示。
+                Explore Vite
+// リンクのテキスト。
+              </a>
+// リンク要素の終了。
+            </li>
+// リスト項目の終了。
+            <li>
+// リスト項目の開始。
+              <a href="https://react.dev/" target="_blank">
+// リンクの開始。
+                <img className="button-icon" src={reactLogo} alt="" />
+// リンク内にReactのロゴを表示。
+                Learn more
+// リンクのテキスト。
+              </a>
+// リンクの終了。
+            </li>
+// リスト項目の終了。
+          </ul>
+// リストの終了。
+        </div>
+// divの終了。
+        <div id="social">
+// ソーシャルリンクをまとめるdiv要素の開始。
+          <svg className="icon" role="presentation" aria-hidden="true">
+// SVGアイコンの開始。
+            <use href="/icons.svg#social-icon"></use>
+// ソーシャル用のアイコンを読み込みます。
+          </svg>
+// SVGの終了。
+          <h2>Connect with us</h2>
+// 小見出し。
+          <p>Join the Vite community</p>
+// 段落。
+          <ul>
+// リストの開始。
+            <li>
+// リスト項目の開始。
+              <a href="https://github.com/vitejs/vite" target="_blank">
+// GitHubへのリンク。
+                <svg
+// アイコン用のSVG開始。
+                  className="button-icon"
+// CSSクラス。
+                  role="presentation"
+// ロール。
+                  aria-hidden="true"
+// スクリーンリーダー無効。
+                >
+// 閉じタグ。
+                  <use href="/icons.svg#github-icon"></use>
+// GitHubアイコン読み込み。
+                </svg>
+// SVG終了。
+                GitHub
+// テキスト。
+              </a>
+// リンク終了。
+            </li>
+// リスト項目終了。
+            <li>
+// リスト項目の開始。
+              <a href="https://chat.vite.dev/" target="_blank">
+// Discordへのリンク。
+                <svg
+// アイコン用のSVG開始。
+                  className="button-icon"
+// CSSクラス。
+                  role="presentation"
+// ロール。
+                  aria-hidden="true"
+// スクリーンリーダー無効。
+                >
+// 閉じタグ。
+                  <use href="/icons.svg#discord-icon"></use>
+// Discordアイコン読み込み。
+                </svg>
+// SVG終了。
+                Discord
+// テキスト。
+              </a>
+// リンク終了。
+            </li>
+// リスト項目終了。
+            <li>
+// リスト項目開始。
+              <a href="https://x.com/vite_js" target="_blank">
+// X(旧Twitter)へのリンク。
+                <svg
+// SVG開始。
+                  className="button-icon"
+// CSSクラス。
+                  role="presentation"
+// ロール。
+                  aria-hidden="true"
+// スクリーンリーダー無効。
+                >
+// 閉じタグ。
+                  <use href="/icons.svg#x-icon"></use>
+// Xアイコン読み込み。
+                </svg>
+// SVG終了。
+                X.com
+// テキスト。
+              </a>
+// リンク終了。
+            </li>
+// リスト項目終了。
+            <li>
+// リスト項目開始。
+              <a href="https://bsky.app/profile/vite.dev" target="_blank">
+// Blueskyへのリンク。
+                <svg
+// SVG開始。
+                  className="button-icon"
+// CSSクラス。
+                  role="presentation"
+// ロール。
+                  aria-hidden="true"
+// スクリーンリーダー無効。
+                >
+// 閉じタグ。
+                  <use href="/icons.svg#bluesky-icon"></use>
+// Blueskyアイコン読み込み。
+                </svg>
+// SVG終了。
+                Bluesky
+// テキスト。
+              </a>
+// リンク終了。
+            </li>
+// リスト項目終了。
+          </ul>
+// リスト終了。
+        </div>
+// div終了。
+      </section>
+// セクション終了。
+
+// 空行。
+      <div className="ticks"></div>
+// スタイル付け用のdiv。
+      <section id="spacer"></section>
+// スタイル付け用のセクション。
+    </>
+// フラグメントの終了。
+  )
+// return文の終了。
+}
+// コンポーネント関数の終了。
+
+// 空行。
+export default App
+// このファイルがインポートされたときに、デフォルトで提供するモジュールとしてAppコンポーネントをエクスポートします。
+```
