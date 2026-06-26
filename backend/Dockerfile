@@ -1,26 +1,36 @@
-# Stage 1: Build the application
+# ステージ1: アプリケーションのビルド
+# ベースイメージとして軽量なAlpine LinuxベースのJDK 17を使用
 FROM eclipse-temurin:17-jdk-alpine AS build
+
+# コンテナ内の作業ディレクトリを/appに設定
 WORKDIR /app
 
-# Copy the Maven wrapper and pom.xml
+# Mavenラッパーと依存関係定義ファイル(pom.xml)をコピー
 COPY mvnw .
 COPY .mvn .mvn
 COPY pom.xml .
 
-# Download dependencies (this step is cached if pom.xml doesn't change)
+# 依存関係をダウンロード (pom.xmlが変更されない限り、このレイヤーはキャッシュされる)
 RUN ./mvnw dependency:go-offline -B
 
-# Copy the source code and build the application
+# ソースコードをコンテナ内にコピー
 COPY src src
+
+# テストをスキップしてMavenでパッケージ化（JARファイルを生成）
 RUN ./mvnw clean package -DskipTests
 
-# Stage 2: Run the application
+# ステージ2: アプリケーションの実行
+# 実行用にはより軽量なJREイメージを使用
 FROM eclipse-temurin:17-jre-alpine
+
+# コンテナ内の作業ディレクトリを/appに設定
 WORKDIR /app
 
-# Copy the built jar from the build stage
+# ビルドステージ（ステージ1）で生成されたJARファイルをapp.jarとしてコピー
 COPY --from=build /app/target/*.jar app.jar
 
+# Spring Bootのデフォルトポート(8080)を公開することを明示
 EXPOSE 8080
 
+# コンテナ起動時に実行されるコマンド（Javaアプリケーションを起動）
 ENTRYPOINT ["java", "-jar", "app.jar"]
