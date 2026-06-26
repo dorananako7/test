@@ -1,25 +1,45 @@
+# Spring Bootアプリケーション全体の設定ファイル
 spring:
+  # データベース接続に関する設定
   datasource:
+    # 接続先URL。docker-composeで設定したサービス名 'postgres' をホストとして指定。
     url: jdbc:postgresql://postgres:5432/npb_prediction
+    # データベースにアクセスするためのユーザー名
     username: npb_user
+    # データベースにアクセスするためのパスワード
     password: npb_password
+    # 使用するJDBCドライバーのクラス名
     driver-class-name: org.postgresql.Driver
+
+  # JPA (Java Persistence API) と Hibernate の設定
   jpa:
     hibernate:
+      # アプリケーション起動時に、Entityクラスの定義からDBのテーブル構造を自動で更新(update)する
       ddl-auto: update
+    # 実行されたSQL文をコンソールに表示する設定
     show-sql: true
     properties:
       hibernate:
+        # コンソールに出力されるSQLを整形（フォーマット）して読みやすくする
         format_sql: true
+        # PostgreSQLに特化したSQLを生成するためのDialect（方言）を指定
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # セキュリティ (OAuth2ログイン) の設定
   security:
     oauth2:
       client:
         registration:
+          # Googleを使用したOAuth2ログインの登録情報
           google:
+            # Google Cloud Consoleで取得したクライアントID (プレースホルダー)
             client-id: YOUR_GOOGLE_CLIENT_ID
+            # Google Cloud Consoleで取得したクライアントシークレット (プレースホルダー)
             client-secret: YOUR_GOOGLE_CLIENT_SECRET
+            # 取得する情報の範囲（プロフィール情報とメールアドレス）
             scope: profile, email
 
+# サーバーに関する設定
 server:
+  # Spring Bootアプリケーションが起動してリクエストを待ち受けるポート番号
   port: 8080

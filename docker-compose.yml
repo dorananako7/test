@@ -1,44 +1,78 @@
+# Docker Composeのバージョン指定
 version: '3.8'
 
+# 定義するサービス（コンテナ）のリスト
 services:
+  # データベース用のPostgreSQLコンテナ
   postgres:
+    # 使用する公式のPostgreSQLイメージとバージョン
     image: postgres:15
+    # コンテナに付ける名前
     container_name: npb_postgres
+    # PostgreSQLコンテナに渡す環境変数（初期DB名やパスワードなど）
     environment:
+      # 起動時に作成されるデフォルトのデータベース名
       POSTGRES_DB: npb_prediction
+      # データベースに接続するためのユーザー名
       POSTGRES_USER: npb_user
+      # データベースに接続するためのパスワード
       POSTGRES_PASSWORD: npb_password
+    # ポートマッピング: ホストの5432ポートをコンテナの5432ポートに紐付け
     ports:
       - "5432:5432"
+    # データを永続化するためのボリュームマッピング
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  # Spring Bootバックエンド用のコンテナ
   backend:
+    # ビルド設定
     build:
+      # ビルドのコンテキスト（ルートディレクトリからのパス）
       context: ./backend
+      # 使用するDockerfileの名前
       dockerfile: Dockerfile
+    # コンテナに付ける名前
     container_name: npb_backend
+    # ポートマッピング: ホストの8080ポートをコンテナの8080ポートに紐付け
     ports:
       - "8080:8080"
+    # 起動順序: postgresコンテナが起動した後に起動する
     depends_on:
       - postgres
+    # Spring Bootアプリケーションに渡す環境変数
     environment:
+      # データベース接続URL（ホスト名を'postgres'にしてコンテナ名で名前解決）
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/npb_prediction
+      # データベース接続ユーザー名
       - SPRING_DATASOURCE_USERNAME=npb_user
+      # データベース接続パスワード
       - SPRING_DATASOURCE_PASSWORD=npb_password
 
+  # React/Viteフロントエンド用のコンテナ
   frontend:
+    # ビルド設定
     build:
+      # ビルドのコンテキスト（ルートディレクトリからのパス）
       context: ./frontend
+      # 使用するDockerfileの名前
       dockerfile: Dockerfile
+    # コンテナに付ける名前
     container_name: npb_frontend
+    # ポートマッピング: ホストの5173ポートをコンテナの5173ポートに紐付け
     ports:
       - "5173:5173"
+    # 起動順序: backendコンテナが起動した後に起動する
     depends_on:
       - backend
+    # ファイルの変更を検知するためのボリュームマッピング
     volumes:
+      # ホストの./frontendディレクトリをコンテナの/appディレクトリにマウント
       - ./frontend:/app
+      # コンテナ内のnode_modulesをホスト側に上書きされないようにするための設定
       - /app/node_modules
 
+# データ永続化のために定義されたボリューム
 volumes:
+  # PostgreSQLのデータを保存するボリューム
   postgres_data:
