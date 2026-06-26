@@ -1719,3 +1719,701 @@ function App() {
 export default App
 // このファイルがインポートされたときに、デフォルトで提供するモジュールとしてAppコンポーネントをエクスポートします。
 ```
+
+frontend/src/api/gameApi.ts
+```
+export interface Game {
+// 試合の基本情報を表すTypeScriptの型（インターフェース）を定義・公開します。
+  id: number;
+// 試合ID（数値）。
+  gameDate: string;
+// 試合日（文字列）。
+  startTime: string; // ISO format e.g. "2024-10-01T18:00:00"
+// 試合開始時刻（ISO形式の文字列）。
+  homeTeam: string;
+// ホームチーム名。
+  awayTeam: string;
+// アウェイチーム名。
+  status: 'BEFORE_GAME' | 'VOTING_CLOSED' | 'GAME_END';
+// 試合のステータス。3つの文字列のいずれかしか許容しません。
+  result: 'HOME' | 'AWAY' | 'DRAW' | null;
+// 試合結果。3つの文字列またはnull（未確定）。
+}
+// Gameインターフェースの終了。
+
+// 空行。
+export interface GameOdds {
+// 予想オッズの集計データを表すインターフェースを定義・公開します。
+  totalVotes: number;
+// 総投票数。
+  homeRatio: number;
+// ホーム勝利の得票比率。
+  awayRatio: number;
+// アウェイ勝利の得票比率。
+  drawRatio: number;
+// 引き分けの得票比率。
+}
+// GameOddsインターフェースの終了。
+
+// 空行。
+export interface PredictionDetail {
+// 個別の予想データ（試合開始後に公開される内訳）を表すインターフェース。
+  nickname: string;
+// 予想したユーザーのニックネーム。
+  predictedWinner: 'HOME' | 'AWAY' | 'DRAW';
+// ユーザーが予想した勝敗。
+}
+// PredictionDetailインターフェースの終了。
+
+// 空行。
+// Dummy data for initial UI implementation
+// コメント。UI実装用のダミーデータであることを示します。
+const DUMMY_GAMES: Game[] = [
+// モックとして使用する固定の試合データ配列を定義します。
+  {
+// 1つ目の試合データ。
+    id: 1,
+// IDは1。
+    gameDate: '2024-10-01',
+// 試合日は2024年10月1日。
+    startTime: new Date(new Date().getTime() + 1000 * 60 * 60 * 2).toISOString(), // 2 hours in the future
+// 現在時刻の2時間後の時刻をISO文字列として設定（試合前テスト用）。
+    homeTeam: '巨人',
+// ホームチーム。
+    awayTeam: '阪神',
+// アウェイチーム。
+    status: 'BEFORE_GAME',
+// ステータスは「試合前」。
+    result: null,
+// 結果は未確定。
+  },
+// 1つ目のデータ終了。
+  {
+// 2つ目の試合データ。
+    id: 2,
+// IDは2。
+    gameDate: '2024-10-01',
+// 試合日。
+    startTime: new Date(new Date().getTime() - 1000 * 60 * 60 * 1).toISOString(), // 1 hour ago
+// 現在時刻の1時間前の時刻を設定（試合中テスト用）。
+    homeTeam: 'ソフトバンク',
+// ホームチーム。
+    awayTeam: 'オリックス',
+// アウェイチーム。
+    status: 'VOTING_CLOSED',
+// ステータスは「投票締切済」。
+    result: null,
+// 結果は未確定。
+  },
+// 2つ目のデータ終了。
+  {
+// 3つ目の試合データ。
+    id: 3,
+// IDは3。
+    gameDate: '2024-10-01',
+// 試合日。
+    startTime: new Date(new Date().getTime() - 1000 * 60 * 60 * 5).toISOString(), // 5 hours ago
+// 現在時刻の5時間前の時刻を設定（試合終了テスト用）。
+    homeTeam: 'DeNA',
+// ホームチーム。
+    awayTeam: 'ヤクルト',
+// アウェイチーム。
+    status: 'GAME_END',
+// ステータスは「試合終了」。
+    result: 'HOME',
+// ホームチームの勝利と設定。
+  }
+// 3つ目のデータ終了。
+];
+// ダミーデータ配列の終了。
+
+// 空行。
+export const fetchGames = async (): Promise<Game[]> => {
+// 試合一覧を取得する非同期関数(fetchGames)を定義し公開します。返り値はPromise<Game[]>。
+  // Simulate network delay
+// コメント。
+  await new Promise(resolve => setTimeout(resolve, 500));
+// setTimeoutを使って500ミリ秒待機し、実際のネットワーク通信の遅延をシミュレートします。
+  return DUMMY_GAMES;
+// 待機後、ダミーデータ配列を返します。
+};
+// 関数の終了。
+
+// 空行。
+export const fetchGameOdds = async (gameId: number): Promise<GameOdds> => {
+// 特定の試合IDに対するオッズを取得する関数(fetchGameOdds)を定義。
+  await new Promise(resolve => setTimeout(resolve, 500));
+// 500ミリ秒待機。
+
+// 空行。
+  if (gameId === 1) {
+// 試合IDが1の場合。
+    return { totalVotes: 120, homeRatio: 60.5, awayRatio: 35.0, drawRatio: 4.5 };
+// ID=1用のダミーオッズデータを返します。
+  } else if (gameId === 2) {
+// 試合IDが2の場合。
+    return { totalVotes: 85, homeRatio: 40.0, awayRatio: 55.0, drawRatio: 5.0 };
+// ID=2用のダミーオッズデータを返します。
+  } else {
+// それ以外（ID=3）の場合。
+    return { totalVotes: 210, homeRatio: 50.0, awayRatio: 45.0, drawRatio: 5.0 };
+// ダミーオッズデータを返します。
+  }
+// if文の終了。
+};
+// 関数の終了。
+
+// 空行。
+export const fetchGamePredictions = async (gameId: number): Promise<PredictionDetail[]> => {
+// 特定の試合の投票内訳（ユーザーごとの予想）を取得する関数(fetchGamePredictions)を定義。
+  await new Promise(resolve => setTimeout(resolve, 500));
+// 500ミリ秒待機。
+
+// 空行。
+  const game = DUMMY_GAMES.find(g => g.id === gameId);
+// 渡されたIDに一致する試合データをダミー配列から探し、game変数に格納します。
+  if (game && game.status === 'BEFORE_GAME') {
+// もし試合が存在し、かつステータスが「試合前」であれば。
+    throw new Error("Predictions are hidden before the game starts.");
+// バックエンドのカンニング防止ロジックと同じように、エラー（例外）を発生させて取得を拒否します。
+  }
+// if文の終了。
+
+// 空行。
+  return [
+// エラーにならなかった場合（試合開始後）、ダミーのユーザー予想配列を返します。
+    { nickname: '野球太郎', predictedWinner: 'HOME' },
+// ユーザー1。
+    { nickname: 'ベースボールファン', predictedWinner: 'AWAY' },
+// ユーザー2。
+    { nickname: 'NPBマニア', predictedWinner: 'HOME' },
+// ユーザー3。
+    { nickname: 'スワローズ命', predictedWinner: 'DRAW' },
+// ユーザー4。
+  ];
+// 配列の終了。
+};
+// 関数の終了。
+```
+
+frontend/src/components/Header.tsx
+```
+import React from 'react';
+// Reactライブラリをインポートします（JSXを使うコンポーネント用）。
+import { Trophy, UserCircle } from 'lucide-react';
+// lucide-reactから、アイコンコンポーネント（トロフィー、ユーザー円形）をインポートします。
+
+// 空行。
+const Header: React.FC = () => {
+// Headerという名前の関数コンポーネント（React.FC型）を定義します。
+  return (
+// 描画するJSXの返却を開始。
+    <header className="bg-blue-900 text-white shadow-md sticky top-0 z-50">
+// headerタグの開始。背景色、文字色、シャドウ、スクロール追従(sticky)、重なり順(z-50)をTailwindクラスで指定。
+      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+// コンテンツを中央寄せするコンテナ。左右にパディング、Flexboxで両端揃え(justify-between)、垂直中央揃えを指定。
+
+// 空行。
+        {/* Logo / App Name */}
+// コメント。ロゴ部分。
+        <div className="flex items-center space-x-2">
+// フレックスコンテナで、アイコンと文字の間に少し間隔(space-x-2)を空けます。
+          <Trophy className="text-yellow-400 w-6 h-6" />
+// トロフィーアイコンを表示。色は黄色、サイズは24px(w-6/h-6)。
+          <h1 className="text-xl font-bold tracking-wider">NPB Predict</h1>
+// アプリ名を表示。文字サイズ大きめ(text-xl)、太字、文字間隔少し広め(tracking-wider)。
+        </div>
+// ロゴdivの終了。
+
+// 空行。
+        {/* Navigation / User Actions */}
+// コメント。ナビゲーション部分。
+        <nav className="flex items-center space-x-6">
+// ナビゲーションメニュー。項目間の間隔を広め(space-x-6)にとります。
+          <a href="#" className="hover:text-blue-200 transition-colors text-sm font-medium">試合一覧</a>
+// リンク。ホバー時に薄い青色になり、アニメーション(transition)します。
+          <a href="#" className="hover:text-blue-200 transition-colors text-sm font-medium">ランキング</a>
+// リンク。
+
+// 空行。
+          <div className="flex items-center bg-blue-800 rounded-full px-3 py-1.5 cursor-pointer hover:bg-blue-700 transition-colors">
+// ログインボタン風のdiv要素。丸角(rounded-full)と背景色、ホバー時の色変化を指定。
+            <UserCircle className="w-5 h-5 mr-2" />
+// ユーザーアイコン。右側にマージン(mr-2)。
+            <span className="text-sm font-medium">ログイン</span>
+// 「ログイン」テキスト。
+          </div>
+// ログインボタンdiv終了。
+        </nav>
+// nav終了。
+
+// 空行。
+      </div>
+// container div終了。
+    </header>
+// header終了。
+  );
+// return終了。
+};
+// コンポーネント終了。
+
+// 空行。
+export default Header;
+// Headerコンポーネントをエクスポート。
+```
+
+frontend/src/components/GameList.tsx
+```
+import React, { useEffect, useState } from 'react';
+// Reactと、副作用処理(useEffect)・状態管理(useState)のフックをインポートします。
+import { fetchGames } from '../api/gameApi';
+// モックAPIから試合一覧取得関数をインポートします。
+import type { Game } from '../api/gameApi';
+// GameのTypeScriptの型（インターフェース）をインポートします。
+import GameCard from './GameCard';
+// 個別の試合を表示するカードコンポーネントをインポートします。
+import { Calendar } from 'lucide-react';
+// カレンダーアイコンをインポートします。
+
+// 空行。
+const GameList: React.FC = () => {
+// GameList関数コンポーネントの定義。
+  const [games, setGames] = useState<Game[]>([]);
+// 試合データの配列を保持する状態変数games。初期値は空配列。
+  const [isLoading, setIsLoading] = useState(true);
+// データ読み込み中かどうかを保持するフラグ状態変数。初期値はtrue（読み込み中）。
+
+// 空行。
+  useEffect(() => {
+// コンポーネントがマウントされた時（初回描画後）に1回だけ実行される副作用フック。
+    const loadGames = async () => {
+// 非同期でデータを取得するための内部関数。
+      try {
+// エラーハンドリングのためのtryブロック。
+        const fetchedGames = await fetchGames();
+// モックAPIを呼び出し、試合データ一覧を取得。
+        setGames(fetchedGames);
+// 取得したデータを状態にセット。
+      } catch (e) {
+// エラー発生時のcatchブロック。
+        console.error(e);
+// コンソールにエラーを出力。
+      } finally {
+// 成功・失敗にかかわらず必ず実行されるブロック。
+        setIsLoading(false);
+// 読み込み完了フラグを下ろす。
+      }
+// ブロックの終了。
+    };
+// 内部関数の終了。
+    loadGames();
+// 定義した内部関数を直ちに呼び出す。
+  }, []);
+// useEffectの依存配列。空なので初回マウント時のみ実行される。
+
+// 空行。
+  if (isLoading) {
+// 読み込み中(isLoading=true)の場合の条件分岐。
+    return (
+// ローディング表示用JSXを返す。
+      <div className="flex justify-center items-center py-20">
+// Flexboxで上下左右中央に配置、上下パディング。
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-800"></div>
+// スピナー（回転する円）。Tailwindのanimate-spinで回転アニメーションを適用。
+      </div>
+// ローディングdiv終了。
+    );
+// return終了。
+  }
+// if文終了。
+
+// 空行。
+  return (
+// ローディング完了後に表示するJSXを返す。
+    <div className="max-w-2xl mx-auto py-6 px-4">
+// 横幅を制限(max-w-2xl)し、画面中央に配置(mx-auto)するコンテナ。
+      <div className="flex items-center space-x-2 mb-6 text-gray-800">
+// 見出しコンテナ。Flexboxでアイコンと文字を横並びに。
+        <Calendar className="w-5 h-5 text-blue-800" />
+// カレンダーアイコン。
+        <h2 className="text-xl font-bold">今日の試合 ＆ 予想オッズ</h2>
+// 見出しテキスト。
+      </div>
+// 見出しコンテナ終了。
+
+// 空行。
+      {games.length === 0 ? (
+// 三項演算子。試合データが0件（空）の場合の分岐。
+        <div className="text-center py-10 bg-white rounded-lg shadow-sm border border-gray-100">
+// 空状態メッセージのコンテナ。
+          <p className="text-gray-500">本日の試合予定はありません。</p>
+// メッセージテキスト。
+        </div>
+// コンテナ終了。
+      ) : (
+// 試合データが1件以上ある場合の分岐。
+        games.map(game => (
+// games配列の各要素(game)に対して繰り返し処理(map)。
+          <GameCard key={game.id} game={game} />
+// 要素ごとにGameCardコンポーネントを描画。Reactが要素を識別できるようにkey(game.id)を渡し、プロパティとしてgameデータを渡す。
+        ))
+// map終了。
+      )}
+// 条件演算子終了。
+    </div>
+// メインコンテナ終了。
+  );
+// return終了。
+};
+// コンポーネント終了。
+
+// 空行。
+export default GameList;
+// GameListコンポーネントをエクスポート。
+```
+
+frontend/src/App.tsx
+```
+import Header from './components/Header';
+// 作成したHeaderコンポーネントをインポートします。
+import GameList from './components/GameList';
+// 作成したGameListコンポーネントをインポートします。
+
+// 空行。
+function App() {
+// アプリケーションのルートコンポーネントであるApp関数の定義。
+  return (
+// アプリケーション全体のレイアウトJSXを返します。
+    <div className="min-h-screen font-sans text-gray-900 bg-[#f3f4f6]">
+// 全体を囲むdiv。最低でも画面の高さ(min-h-screen)を持ち、フォント、文字色、背景色（グレー）を指定。
+      <Header />
+// 画面上部にHeaderコンポーネントを描画します。
+      <main>
+// ページごとの主要なコンテンツを配置するmainタグ。
+        <GameList />
+// その中にGameListコンポーネントを描画します。
+      </main>
+// mainタグ終了。
+
+// 空行。
+      <footer className="mt-12 py-6 text-center text-sm text-gray-400 border-t border-gray-200">
+// フッター要素。上部にマージンとボーダー(線)を引き、文字を中央寄せ(text-center)・小さく(text-sm)します。
+        &copy; {new Date().getFullYear()} NPB Predict App. Not affiliated with Nippon Professional Baseball.
+// コピーライト表示と免責事項。JavaScriptで現在の年を動的に取得・表示しています。
+      </footer>
+// フッター終了。
+    </div>
+// 外側のdiv終了。
+  );
+// return終了。
+}
+// コンポーネント終了。
+
+// 空行。
+export default App;
+// Appコンポーネントをエクスポート。
+```
+
+frontend/src/components/GameCard.tsx
+```
+import React, { useEffect, useState } from 'react';
+// Reactと、副作用処理(useEffect)・状態管理(useState)のフックをインポートします。
+import { fetchGameOdds, fetchGamePredictions } from '../api/gameApi';
+// モックAPIから、オッズ取得関数と予想内訳取得関数をインポートします。
+import type { Game, GameOdds, PredictionDetail } from '../api/gameApi';
+// モックAPIから、試合、オッズ、予想詳細の各TypeScriptの型（インターフェース）を型としてのみ(type)インポートします。
+import { Clock, Users, Lock, Unlock, CheckCircle } from 'lucide-react';
+// アイコンライブラリから必要なアイコンをインポートします。
+
+// 空行。
+interface GameCardProps {
+// GameCardコンポーネントが受け取る引数（プロパティ）の型定義を開始。
+  game: Game;
+// gameという名前でGame型のオブジェクトを受け取ることを定義。
+}
+// インターフェースの終了。
+
+// 空行。
+const GameCard: React.FC<GameCardProps> = ({ game }) => {
+// GameCardコンポーネントの定義。ジェネリクスでGameCardPropsを指定し、引数からgameオブジェクトを取り出します（分割代入）。
+  const [odds, setOdds] = useState<GameOdds | null>(null);
+// オッズデータを保持する状態変数。初期値はnull。
+  const [predictions, setPredictions] = useState<PredictionDetail[] | null>(null);
+// 予想内訳データを保持する状態変数。初期値はnull。
+  const [isLoading, setIsLoading] = useState(true);
+// データロード中の状態を保持するフラグ。初期値はtrue。
+
+// 空行。
+  // Parse game time
+// コメント。
+  const gameDate = new Date(game.startTime);
+// 試合の開始時刻（文字列）からJavaScriptのDateオブジェクトを生成。
+  const timeString = `${gameDate.getHours().toString().padStart(2, '0')}:${gameDate.getMinutes().toString().padStart(2, '0')}`;
+// Dateオブジェクトから時間と分を取り出し、「18:00」のような文字列に整形します。
+
+// 空行。
+  useEffect(() => {
+// コンポーネントのマウント時や、特定の変数が変化した際に実行されるフック。
+    const loadData = async () => {
+// 非同期でデータを取得する内部関数。
+      try {
+// エラーハンドリング開始。
+        const fetchedOdds = await fetchGameOdds(game.id);
+// APIから対象試合のオッズデータを取得。
+        setOdds(fetchedOdds);
+// 取得したオッズを状態変数にセット。
+
+// 空行。
+        if (game.status !== 'BEFORE_GAME') {
+// もし試合のステータスが「試合前」でない（＝試合が始まっている）なら。
+          const fetchedPredictions = await fetchGamePredictions(game.id);
+// カンニング防止が解除されているはずなので、予想内訳データを取得。
+          setPredictions(fetchedPredictions);
+// 取得した予想内訳を状態変数にセット。
+        }
+// if文終了。
+      } catch (e) {
+// エラー捕捉。
+        console.error(e);
+// コンソールに出力。
+      } finally {
+// 成功・失敗にかかわらず実行。
+        setIsLoading(false);
+// ローディングフラグを下ろす。
+      }
+// finally終了。
+    };
+// 内部関数終了。
+
+// 空行。
+    loadData();
+// 定義した関数を呼び出す。
+  }, [game.id, game.status]);
+// useEffectの依存配列。game.idかgame.statusが変わった場合のみ、このフックの中身が再実行されます。
+
+// 空行。
+  return (
+// 描画するJSXを開始。
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6 transition-all hover:shadow-md">
+// カード全体のコンテナ。白背景、角丸、影、ボーダー、ホバー時に影が濃くなる効果を指定。
+
+// 空行。
+      {/* Card Header (Teams and Time) */}
+// コメント。カードヘッダー部分。
+      <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 border-b border-gray-100 flex justify-between items-center">
+// ヘッダー。薄いグレーのグラデーション背景、下線、両端揃えのFlexbox。
+        <div className="flex items-center space-x-2 text-gray-500">
+// 時間表示コンテナ。
+          <Clock className="w-4 h-4" />
+// 時計アイコン。
+          <span className="text-sm font-semibold">{timeString} プレイボール</span>
+// 計算した試合開始時刻を表示。
+        </div>
+// 時間表示終了。
+        <div className="text-xs font-bold px-2 py-1 rounded bg-gray-200 text-gray-600">
+// ステータスバッジのコンテナ。
+          {game.status === 'BEFORE_GAME' ? '投票受付中' : game.status === 'VOTING_CLOSED' ? '試合中 (投票締切)' : '試合終了'}
+// 試合のステータスEnumの値によって、表示する日本語テキストを切り替えます。
+        </div>
+// ステータスバッジ終了。
+      </div>
+// カードヘッダー終了。
+
+// 空行。
+      <div className="p-5">
+// カード本文のコンテナ（余白p-5）。
+
+// 空行。
+        {/* Teams Display */}
+// コメント。対戦チーム表示部分。
+        <div className="flex justify-between items-center mb-6">
+// 横並び(flex)でチーム名とVSを表示するコンテナ。
+          <div className="flex-1 text-center">
+// ホームチームのコンテナ（等幅で伸縮=flex-1、中央寄せ）。
+            <h3 className="text-xl font-bold text-gray-800">{game.homeTeam}</h3>
+// ホームチーム名を表示。
+            <p className="text-xs text-gray-400 mt-1">HOME</p>
+// "HOME"というラベルを表示。
+          </div>
+// ホームコンテナ終了。
+          <div className="px-4 text-gray-400 font-bold text-lg">VS</div>
+// "VS"という文字を表示。
+          <div className="flex-1 text-center">
+// アウェイチームのコンテナ。
+            <h3 className="text-xl font-bold text-gray-800">{game.awayTeam}</h3>
+// アウェイチーム名を表示。
+            <p className="text-xs text-gray-400 mt-1">AWAY</p>
+// "AWAY"というラベルを表示。
+          </div>
+// アウェイコンテナ終了。
+        </div>
+// 対戦チーム表示終了。
+
+// 空行。
+        {/* Voting Panel (Only if BEFORE_GAME) */}
+// コメント。投票パネル（試合前のみ表示）。
+        {game.status === 'BEFORE_GAME' && (
+// もしステータスがBEFORE_GAMEであれば、後続のJSXを描画します。
+          <div className="mb-6">
+// 投票パネルのコンテナ。
+            <p className="text-sm font-semibold text-gray-600 mb-2 text-center">あなたの予想は？</p>
+// メッセージテキスト。
+            <div className="flex gap-2">
+// ボタンを横並びに配置し、間隔(gap-2)を空けるコンテナ。
+              <button className="flex-1 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white border border-blue-200 font-bold py-2 px-4 rounded transition-colors text-sm">
+// ホームチーム勝利ボタン。青色ベースでホバー時に色反転。
+                {game.homeTeam}の勝ち
+// ボタンテキスト。
+              </button>
+// ボタン終了。
+              <button className="flex-1 bg-gray-50 text-gray-700 hover:bg-gray-600 hover:text-white border border-gray-200 font-bold py-2 px-4 rounded transition-colors text-sm">
+// 引き分けボタン。グレーベース。
+                引き分け
+// ボタンテキスト。
+              </button>
+// ボタン終了。
+              <button className="flex-1 bg-red-50 text-red-700 hover:bg-red-600 hover:text-white border border-red-200 font-bold py-2 px-4 rounded transition-colors text-sm">
+// アウェイチーム勝利ボタン。赤色ベース。
+                {game.awayTeam}の勝ち
+// ボタンテキスト。
+              </button>
+// ボタン終了。
+            </div>
+// ボタングループ終了。
+            <p className="text-xs text-center text-gray-400 mt-2 flex items-center justify-center">
+// 未ログイン時の注意書きコンテナ。
+              <Lock className="w-3 h-3 mr-1" /> ログインして投票に参加しよう
+// 南京錠アイコンとメッセージ。
+            </p>
+// 注意書き終了。
+          </div>
+// 投票パネル終了。
+        )}
+// BEFORE_GAME条件終了。
+
+// 空行。
+        {/* Odds Section */}
+// コメント。オッズ表示部分。
+        {isLoading ? (
+// ロード中の場合。
+          <div className="h-16 flex items-center justify-center text-gray-400 text-sm">読み込み中...</div>
+// プレースホルダー文字列を表示。
+        ) : odds ? (
+// ロード完了で、オッズデータが存在する場合。
+          <div className="bg-gray-50 rounded-lg p-4">
+// オッズ表示エリアのコンテナ。
+            <div className="flex justify-between text-xs font-semibold text-gray-500 mb-2">
+// オッズヘッダー（総票数とステータス）のコンテナ。
+              <div className="flex items-center"><Users className="w-3 h-3 mr-1"/> みんなの予想オッズ ({odds.totalVotes}票)</div>
+// ユーザーアイコンと総投票数を表示。
+              {game.status === 'BEFORE_GAME' ? (
+// 試合前かどうかの条件分岐。
+                <div className="flex items-center text-orange-500"><Lock className="w-3 h-3 mr-1"/> 誰が投票したかは試合開始まで秘密</div>
+// 試合前なら南京錠アイコンと秘密メッセージをオレンジで表示。
+              ) : (
+// 試合開始後なら。
+                <div className="flex items-center text-green-600"><Unlock className="w-3 h-3 mr-1"/> 投票内訳公開中</div>
+// 開いた南京錠アイコンと公開中メッセージを緑で表示。
+              )}
+// 条件分岐終了。
+            </div>
+// オッズヘッダー終了。
+
+// 空行。
+            {/* Progress Bar for Odds */}
+// コメント。オッズを視覚化するプログレスバー。
+            <div className="h-4 w-full flex rounded-full overflow-hidden">
+// 1本のバーとして見せるためのコンテナ。はみ出た部分を隠す(overflow-hidden)。
+              <div style={{ width: `${odds.homeRatio}%` }} className="bg-blue-500 h-full flex justify-center items-center text-[10px] text-white font-bold transition-all duration-500">
+// ホーム割合を示す青いバー。style属性で幅を動的に設定。
+                {odds.homeRatio > 10 ? `${odds.homeRatio}%` : ''}
+// 幅が小さすぎる場合は文字がはみ出るため、10%より大きい場合のみパーセントを表示。
+              </div>
+// ホームバー終了。
+              <div style={{ width: `${odds.drawRatio}%` }} className="bg-gray-400 h-full flex justify-center items-center text-[10px] text-white font-bold transition-all duration-500">
+// 引き分け割合を示すグレーのバー。
+                {odds.drawRatio > 10 ? `${odds.drawRatio}%` : ''}
+// 同様に幅チェックして表示。
+              </div>
+// 引き分けバー終了。
+              <div style={{ width: `${odds.awayRatio}%` }} className="bg-red-500 h-full flex justify-center items-center text-[10px] text-white font-bold transition-all duration-500">
+// アウェイ割合を示す赤いバー。
+                {odds.awayRatio > 10 ? `${odds.awayRatio}%` : ''}
+// 同様に表示。
+              </div>
+// アウェイバー終了。
+            </div>
+// プログレスバー終了。
+
+// 空行。
+            <div className="flex justify-between mt-2 text-xs font-bold">
+// バーの下に詳細な数値を表示するコンテナ。
+              <span className="text-blue-700">{game.homeTeam}: {odds.homeRatio}%</span>
+// ホームチーム名と比率。
+              <span className="text-gray-500">引分: {odds.drawRatio}%</span>
+// 引き分け比率。
+              <span className="text-red-700">{game.awayTeam}: {odds.awayRatio}%</span>
+// アウェイチーム名と比率。
+            </div>
+// 詳細数値終了。
+          </div>
+// オッズ表示エリア終了。
+        ) : null}
+// isLoading・odds条件終了。
+
+// 空行。
+        {/* Revealed Predictions (Only if after game started) */}
+// コメント。投票内訳の公開部分。
+        {game.status !== 'BEFORE_GAME' && predictions && (
+// 試合開始後で、かつ予想内訳データが存在する場合。
+          <div className="mt-4 pt-4 border-t border-gray-100">
+// 内訳表示コンテナ（上に線あり）。
+            <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+// 小見出しコンテナ。
+              <CheckCircle className="w-4 h-4 mr-1 text-green-500" /> 最新の投票内訳 (一部)
+// チェックアイコンとタイトル。
+            </h4>
+// 小見出し終了。
+            <div className="flex flex-wrap gap-2">
+// ユーザーのバッジを並べるコンテナ。折り返し可能(flex-wrap)。
+              {predictions.map((p, idx) => (
+// 予想データの配列をループして個々の要素(p)を描画。
+                <span key={idx} className="inline-flex items-center px-2 py-1 rounded bg-white border border-gray-200 text-xs text-gray-600 shadow-sm">
+// ユーザー1人分のバッジ。
+                  <span className="font-semibold mr-1">{p.nickname}</span>
+// ユーザー名を表示。
+                  <span className={`px-1 rounded text-[10px] text-white ${
+// ユーザーの予想内容を示すカラーラベル。テンプレートリテラルで色を動的設定。
+                    p.predictedWinner === 'HOME' ? 'bg-blue-500' : p.predictedWinner === 'AWAY' ? 'bg-red-500' : 'bg-gray-500'
+// HOMEなら青、AWAYなら赤、引き分けならグレー。
+                  }`}>
+// 閉じタグ。
+                    {p.predictedWinner === 'HOME' ? game.homeTeam : p.predictedWinner === 'AWAY' ? game.awayTeam : '引分'}
+// 予想したチーム名、または「引分」を表示。
+                  </span>
+// カラーラベル終了。
+                </span>
+// バッジ終了。
+              ))}
+// map終了。
+            </div>
+// ユーザーバッジコンテナ終了。
+          </div>
+// 内訳コンテナ終了。
+        )}
+// 条件分岐終了。
+
+// 空行。
+      </div>
+// カード本文終了。
+    </div>
+// カード全体終了。
+  );
+// return終了。
+};
+// コンポーネント終了。
+
+// 空行。
+export default GameCard;
+// GameCardコンポーネントのエクスポート。
+```
